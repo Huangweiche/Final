@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Game</title>
+
+    <!-- Bootstrap: Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css"
+          integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
+
+    <!-- Bootstrap Slider
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.0.0/css/bootstrap-slider.min.css" >
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.0.0/bootstrap-slider.min.js"></script>-->
+
+    <!-- Vue.js newest version -->
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <!-- Vue Bootstrap -->
+    <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap@next/dist/css/bootstrap.min.css"/>
+    <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.css"/>
+
+    <!-- Local files -->
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <!--<script src="app.js"></script>-->
+	<link href="https://fonts.googleapis.com/css?family=Permanent+Marker&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Noto+Sans+TC&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="animate.css">
+</head>
+<body>
+<div id="app" class="container-fluid">
+    <audio id="audio_success" src="SuccessSound.mp3" preload="auto"></audio>
+    <audio id="audio_buttons" src="buttom.mp3" preload="auto"></audio>
+    <audio id="audio_applause" src="https://www.soundjay.com/human/sounds/applause-4.mp3" preload="auto"></audio>
+    <div class="button-groups">
+        <div class="btn btn-lg control-op" data-toggle="buttons">Choice&nbsp;
+            <button @click="toggle_op(0)" @dblclick="toggle_op(-1)" id="toggle-plus" type="button"
+                    class="btn btn-info btn-op btn-lg">+
+            </button>
+            <button @click="toggle_op(1)" @dblclick="toggle_op(-2)" id="toggle-minus" type="button"
+                    class="btn btn-info btn-op btn-lg">&#8722;
+            </button>
+            <button @click="toggle_op(2)" @dblclick="toggle_op(-3)" id="toggle-times" type="button"
+                    class="btn btn-info btn-op btn-lg">x
+            </button>
+            <button @click="toggle_op(3)" @dblclick="toggle_op(-4)" id="toggle-divide" type="button"
+                    class="btn btn-info btn-op btn-lg">/
+            </button>
+			<button @click="toggle_op(4)" @dblclick="toggle_op(-5)" id="toggle-radical" type="button"
+                    class="btn btn-info btn-op btn-lg">√
+            </button>
+			<button @click="toggle_op(5)" @dblclick="toggle_op(-6)" id="toggle-mod" type="button"
+                    class="btn btn-info btn-op btn-lg">%
+            </button>
+        </div>
+        <div class="btn btn-lg control-op" v-cloak>
+            <select v-model="low_selected" class="form-control digit-control text-white" id="min-digits">
+                <option v-for="option in options.slice(0, high_selected)" v-bind:value="option">{{option}}</option>
+            </select>
+            <select v-model="high_selected" class="form-control digit-control text-white" id="max-digits">
+                <option v-for="option in options.slice(low_selected - 1)" v-bind:value="option">{{option}}</option>
+            </select> digits
+        </div>
+        <div class="btn-group float-right" id="score-group" role="group" aria-label="Difficulty" v-cloak>
+            <button id="score-counter" type="button" class="btn btn-success btn-lg">Target: {{score}} /
+                <input v-model="target_score" type="number" id="target-score">
+            </button>
+
+        </div>
+    </div>
+    <div class="jumbotron text-white text-center"> <!-- Introduction -->
+        <div v-if="!game_started">
+            <h1 id="game_title" class="display-2"> Mental Arithmetic </h1>
+            <br><br>
+            <div id="instructions" class="animated bounceInRight delay-1.5s">
+                <p id = "mytitle" class="lead" >這是一個讓你練習心算的遊戲!<br>
+                    選擇你不要的運算符號並用<br>
+					最低和最高位數來調整難度<br>
+					更改分數來決定你要的題數<br>
+					若題目太難，無法馬上回答<br>
+					你可以按s鍵跳過以節省時間<br>
+					一但輸入正確將會自動跳下題</p>
+            </div>
+            <br>
+            <button class='btn btn-info btn-lg' id="start_button" @click="start_game" tabindex="1" autofocus>Enter
+            </button>
+        </div>
+        <div v-else-if="game_ended">
+            <h1 id="game_title" class="display-2"> Your average response time </h1>
+            <br><br>
+            <div id="result">
+                <h2 class="display-4">{{avg_time}} 秒</h2>
+            </div>
+            <br>
+            <button class='btn btn-info btn-lg' id="end_button" @click="end_game" tabindex="1" autofocus>繼續下一輪
+            </button>
+        </div>
+        <div v-else v-cloak>
+            <div class="problem_and_answer">
+                <div class="problem">
+				  <h2 v-if="is_radical" class="display-1">{{op_symbols[op]}} {{first_num}}</h2><br>
+                  <h2 v-if="!is_radical" id="actual-problem" class="display-1">{{first_num}} {{op_symbols[op]}} {{second_num}} </h2><br>
+                </div>
+                <div class="container form-group">
+                    <input v-model="response" v-focus type="text" class="form-control text-center display-1"
+                           id="answer">
+                </div>
+            </div>
+        </div>
+        <!-- need this for computed value -->
+        <p v-cloak>{{check_response}}</p>
+
+    </div>
+
+
+</div>
+
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js"
+        integrity="sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4"
+        crossorigin="anonymous"></script>
+
+<script src="app.js"></script>
+<!-- Vue Bootstrap -->
+<script src="//unpkg.com/babel-polyfill@latest/dist/polyfill.min.js"></script>
+<script src="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.js"></script>
+</body>
+</html>

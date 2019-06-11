@@ -1,0 +1,19 @@
+# ArithMetrics
+![Screenshot](screenshots/start.jpg)
++ Practice mental arithmetic,
++ Built with Vue.js,
++ Play at: https://qedpi.github.io/ArithMetrics/ or http://qedpi.com/game
+
+# Customize Operators & Number of Digits
+![Screenshot](screenshots/customize.jpg)
++ The operator and operands will be randomized for each problem,
++ Click on the operator buttons to enable and disable training with them,
++ Adjust difficulty by changing the minimum & maximum amount of digits,
++ Here, we only want two digit addition / subtraction problems.
+
+# Playing the Game
+![Screenshot](screenshots/gameplay.jpg)
++ Correct answers will automatically be accepted, 
++ Plays a bubble-popping sound effect!
++ Type 's' to skip a problem.
++ Score ( problems solved ) shown on top-right. 
